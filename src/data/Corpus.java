@@ -21,6 +21,7 @@ public class Corpus implements Collection<Hotel>, Iterable<Hotel>{
 		Collection<Hotel> second = new Vector<Hotel>();
 		Iterator<Hotel> it = this.hotels.iterator();
 		for(int i = 0; i < max; i++){			
+			if(it.hasNext())
 			second.add(it.next());
 		}
 		this.hotels = second;

@@ -41,7 +41,7 @@ public class NaiveBayesClassifier implements WekaInterface{
 		stv.setInputFormat(data);
 		Instances newdata = Filter.useFilter(data, stv);
 		this.inst = newdata;
-		this.inst.setClassIndex(0);	
+		this.inst.setClassIndex(1);	
 		
 
 	}
@@ -65,7 +65,7 @@ public class NaiveBayesClassifier implements WekaInterface{
 
 		stv.setInputFormat(instances);
 		instances = Filter.useFilter(instances, stv);
-		 instances.setClassIndex(0);
+		 instances.setClassIndex(1);
 		 Evaluation eval = new Evaluation(instances);
 		 eval.crossValidateModel(this.classifier, instances, 10, new Random(1));
 		 System.out.println(eval.toSummaryString());
