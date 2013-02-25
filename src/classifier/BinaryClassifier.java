@@ -11,6 +11,8 @@ import data.TripAdvisorCorpusLoader;
 import weka.NaiveBayesClassifier;
 import weka.WekaFileGenerator;
 import weka.WekaInterface;
+import weka.core.Attribute;
+import weka.core.Instances;
 import models.Hotel;
 import models.Review;
 
@@ -22,6 +24,7 @@ public class BinaryClassifier {
 	private List<String> processedResults;
 	private static int LIMIT = 3;
 	private String name;
+	private Instances instances;
 	
 	
 	public BinaryClassifier(){
@@ -40,6 +43,10 @@ public class BinaryClassifier {
 		System.out.println("Hoteles : " + corpus.size());
 		System.out.println("Reviews : " + corpus.reviews());
 	}
+	public void LoadCorpus(Instances instances, String label) throws CorpusLoaderException{
+		this.instances = instances;
+		
+	}
 	public void processSentences(){
 		this.processedSentences = new ArrayList<>();
 		this.processedResults = new ArrayList<>();
@@ -55,6 +62,7 @@ public class BinaryClassifier {
 		}
 	}
 	private void extractFromReview(Review review) {
+		review.setContent(review.getContent().replace("'", ""));
 		this.processedSentences.add("'"+review.getContent()+"'");
 		if(review.getOverall()>LIMIT) this.processedResults.add("GOOD");
 		else this.processedResults.add("POOR");
@@ -67,6 +75,12 @@ public class BinaryClassifier {
 		this.classifier.filterData();
 		this.classifier.trainClassifier();
 		this.classifier.crossValidation("data/"+this.name+".arff");
+	}
+	public void launchInstances() throws Exception {
+		this.classifier.loadData(this.instances);
+		this.classifier.trainClassifier();
+		this.classifier.crossValidation(this.instances);
+		
 	}
 	private void generateFile() throws IOException {
 		WekaFileGenerator wfg = new WekaFileGenerator("data/"+this.name+".arff");
@@ -81,8 +95,38 @@ public class BinaryClassifier {
 			wfg.addLine(values);
 			
 		}
+		wfg.close();
 		
 	}
+	
+	public void generateTest() throws IOException {
+		WekaFileGenerator wfg = new WekaFileGenerator("data/"+this.name+"Test.arff");
+		wfg.addAtribute("Sentence", "string");
+		wfg.addAtribute("Result", "{GOOD,POOR}");
+		wfg.generateAttributes();
+		List<Object> values = new ArrayList<>();
+		for(int i = 0; i < this.processedResults.size();i++){
+			values = new ArrayList<>();
+			values.add(this.processedSentences.get(i));
+			values.add("?");
+			wfg.addLine(values);
+			
+		}
+		wfg.close();
+		
+	}
+	public Instances classify(String string) throws Exception {
+		// TODO Auto-generated method stub
+		return this.classifier.labelData(string);
+	}
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	
 
 }

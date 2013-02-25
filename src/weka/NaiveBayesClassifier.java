@@ -29,6 +29,11 @@ public class NaiveBayesClassifier implements WekaInterface{
 		 if (this.inst.classIndex() == -1)
 			 this.inst.setClassIndex(this.inst.numAttributes() - 1);	
 	}
+	public void loadData(Instances data) throws Exception {
+		this.inst = data;
+		 if (this.inst.classIndex() == -1)
+			 this.inst.setClassIndex(this.inst.numAttributes() - 1);	
+	}
 	@Override
 	public void filterData() throws Exception{
 		Instances data = source.getDataSet();
@@ -41,7 +46,7 @@ public class NaiveBayesClassifier implements WekaInterface{
 		stv.setInputFormat(data);
 		Instances newdata = Filter.useFilter(data, stv);
 		this.inst = newdata;
-		this.inst.setClassIndex(1);	
+		this.inst.setClassIndex(0);	
 		
 
 	}
@@ -50,7 +55,24 @@ public class NaiveBayesClassifier implements WekaInterface{
 	public void trainClassifier() throws Exception {
 		   this.classifier = new NaiveBayes();
 		   this.classifier.buildClassifier(this.inst);
-		    System.out.println(this.classifier);
+		   // System.out.println(this.classifier);
+		
+	}
+	@Override
+	public void crossValidation(Instances instances) throws Exception {
+		StringToWordVector stv = new StringToWordVector();
+		stv.setOptions(weka.core.Utils.splitOptions("-R first-last -W 1000 " +
+						"-prune-rate -1.0 -N 0 " +
+						"-stemmer weka.core.stemmers.NullStemmer -M 1 " +
+						"-tokenizer \"weka.core.tokenizers.WordTokenizer -delimiters  \\\" \\r\\n\\t.,;:\\\'\\\"()?!\""));
+
+	stv.setInputFormat(instances);
+	instances = Filter.useFilter(instances, stv);
+	 instances.setClassIndex(0);
+	 Evaluation eval = new Evaluation(instances);
+	 eval.crossValidateModel(this.classifier, instances, 10, new Random(1));
+	 System.out.println(eval.toSummaryString());
+	 System.out.println(eval.toMatrixString());
 		
 	}
 	@Override
@@ -65,7 +87,7 @@ public class NaiveBayesClassifier implements WekaInterface{
 
 		stv.setInputFormat(instances);
 		instances = Filter.useFilter(instances, stv);
-		 instances.setClassIndex(1);
+		 instances.setClassIndex(0);
 		 Evaluation eval = new Evaluation(instances);
 		 eval.crossValidateModel(this.classifier, instances, 10, new Random(1));
 		 System.out.println(eval.toSummaryString());
@@ -75,15 +97,25 @@ public class NaiveBayesClassifier implements WekaInterface{
 	public Instances labelData(String data) throws Exception {
 		Instances unlabeled = new Instances(new BufferedReader(new FileReader(data)));
 			// set class attribute
-		unlabeled.setClassIndex(unlabeled.numAttributes() - 1);
+		 StringToWordVector stv = new StringToWordVector();
+			stv.setOptions(weka.core.Utils.splitOptions("-R first-last -W 1000 " +
+							"-prune-rate -1.0 -N 0 " +
+							"-stemmer weka.core.stemmers.NullStemmer -M 1 " +
+							"-tokenizer \"weka.core.tokenizers.WordTokenizer -delimiters  \\\" \\r\\n\\t.,;:\\\'\\\"()?!\""));
+
+		stv.setInputFormat(unlabeled);
+		unlabeled = Filter.useFilter(unlabeled, stv);
+		unlabeled.setClassIndex(0);
 		// create copy
 		Instances labeled = new Instances(unlabeled);
 	    for (int i = 0; i < unlabeled.numInstances(); i++) {
 		    Instance ui = unlabeled.instance(i);
 		    double clsLabel = this.classifier.classifyInstance(ui);
 		    labeled.instance(i).setClassValue(clsLabel);  
-		    System.out.println(ui.toString() + " -> " + unlabeled.classAttribute().value((int) clsLabel));
+		   // System.out.println(ui.toString() + " -> " + unlabeled.classAttribute().value((int) clsLabel));
 	    }
 	    return labeled;
 	}
+
+
 }

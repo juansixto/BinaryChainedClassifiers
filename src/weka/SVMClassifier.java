@@ -86,4 +86,16 @@ public class SVMClassifier implements WekaInterface{
 	    }
 	    return labeled;
 	}
+
+	@Override
+	public void loadData(Instances data) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void crossValidation(Instances traindata) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
 }

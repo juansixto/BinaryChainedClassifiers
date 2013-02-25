@@ -1,0 +1,6 @@
+@relation WekaDemo
+
+@attribute Sentence string
+@attribute Result {GOOD,POOR}
+
+@data
